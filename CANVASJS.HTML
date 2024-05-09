@@ -1,0 +1,181 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <style>
+    body{
+      width: 70%;
+    }
+    *{
+      font-weight:25px!important;
+    }
+    .form-control{
+      width: 9%!important;
+    }
+    .control-elements{
+    position: relative;
+    left: 35%;
+    bottom: 351px;
+    }
+    .dropdownMenu{
+      border-color:#41a5f5;
+      opacity:0.9;
+      border-width:2px;
+      border-radius:3px;
+    }
+    .dropdownMenu :hover{
+      border-color:#41a5f5;
+      opacity:0.9;
+      border-width:2px;
+      border-radius:3px;
+    }
+  </style>
+<script type="text/javascript" src="js/jquery-3.7.1.min.js"></script>
+<script type="text/javascript" src="js/canvasjs.stock.min.js"></script>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Sofia" rel="stylesheet"/>
+<script src="js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript">
+  $( document ).ready(function() {
+var dataPoints = [];
+var api = "demo"; // get your own api (https://www.alphavantage.co/support/#api-key)
+var company = 'IBM';
+var symbol = "IBM";
+var chart = null;
+
+    //var dataPointsOhlc = [];
+  var stockChart = new CanvasJS.StockChart("stockChartContainer",{
+     theme: "light", //"light1", "dark1", "dark2"],
+    title:{
+      dropdownMenu:'#2080e1',
+      text:"Syrahealth stock Quotes"
+    },
+    charts: [{
+      axisX: {
+        crosshair: {
+          enabled: true,
+          snapToDataPoint: true
+        }
+      },
+      axisY: {
+        prefix: "$",
+        crosshair: {
+          enabled: true,
+          snapToDataPoint: true,
+          valueFormatString: "$#,###.##"
+        }
+      
+      },
+      toolTip: {
+        shared: true,
+      },
+      
+      
+      data: [
+      {
+          type:"line",
+        name: "Price",
+        yValueFormatString: "$#,###.##",
+        dataPoints : dataPoints
+      },
+      
+      ],
+      
+      
+    }],
+    
+    navigator: {
+      slider: {
+        minimum: new Date(2018, '01', '01'),
+        maximum: new Date(2018, '10', '01')
+      },
+      
+      
+    }
+    
+  });
+  if(company !== null){
+    $.getJSON("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=IBM&outputsize=full&apikey="+api)
+    .done(function(data){
+      var date = data["Time Series (Daily)"]
+      let a = 300;
+      let b = 100;
+      for(var d in date){
+        var r = d.split("-");
+        //if(a-- > 0){
+          var value = date[d];
+         if(stockChart.options.charts[0].data[0].type ==='line' || stockChart.options.charts[0].data[0].type ==='area' || stockChart.options.charts[0].data[0].type ==='column'){
+          dataPoints.push({x: new Date(parseInt(r[0]), parseInt(r[1])-1, parseInt(r[2])), y: parseFloat(value["4. close"])});
+          
+         } else{
+          dataPoints.push({x: new Date(parseInt(r[0]), parseInt(r[1])-1, parseInt(r[2])), y: [parseFloat(value["1. open"]), parseFloat(value["2. high"]), parseFloat(value["3. low"]), parseFloat(value["4. close"])]});
+         }
+          
+          // if(b-- > 0){
+          //   let c = [d, value["1. open"], value["2. high"], value["3. low"], value["4. close"]];
+
+          //   //console.log(dataPoints);
+          // }
+        //}
+      }  
+      stockChart.render();
+    })
+    .fail(function(textStatus, error){
+      alert(textStatus+" "+error+"\nReload the page");
+    })
+  }
+// $.getJSON("https://canvasjs.com/data/docs/btcusd2018.json", function(data) {
+  // $.getJSON("https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=demo", function(data) {
+  // //$.getJSON("https://ir.syrahealth.com/range_stock_data", function(data) {
+  
+  // console.log(stockChart);
+  //   for(var i = 0; i < data.length; i++){
+      
+  //     dataPoints.push({x: new Date(data[i].date), y: Number(data[i].close)});
+  //   }
+  //   for(var j = 0; j < data.length; j++){
+  //     dataPoints.push({x: new Date(data[j].date), y: [Number(data[j].open), Number(data[j].high), Number(data[j].low), Number(data[j].close)]});  
+   
+  //   }
+    
+  //   stockChart.render();
+  // });
+  
+  
+  var chartType = document.getElementById('chartType');
+  var stockChart;
+
+chartType.addEventListener( "change",  function(){
+
+  stockChart.options.charts[0].data[0].type = chartType.options[chartType.selectedIndex].value;
+  
+  stockChart.render();
+});
+select_id.addEventListener( "change",  function(){
+stockChart.options.charts[0].axisY.prefix = select_id.options[select_id.selectedIndex].value;
+stockChart.render();
+});
+
+
+})
+
+</script></head>
+<body>
+
+<div id="stockChartContainer" style="height: 400px; max-width: 920px; margin: 0px auto;"></div>
+<div class="control-elements">
+  <select id="chartType" name="chartType" class="dropdownMenu">
+    <option value="line">Line</option>
+    <option value="area">Area</option>
+    <option value="column">Column</option>
+    <option value="ohlc">OHLC</option>
+    <option value="candlestick">candlestick</option>
+  </select>  
+  <select id="select_id" name="currencytype" class="dropdownMenu">
+    <option value="">Price</option>
+    <option value="%">%</option>
+    <option value="$">$</option>
+
+  </select>  
+</div>
+</body>
+</html>
